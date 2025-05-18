@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js"></script>
+    <title>weather</title>
+</head>
+<body>
+  <div class="card">
+    <div class="search">
+        <input
+          type="text"
+          placeholder="enter city name"
+          aria-label="City name"
+          spellcheck="false"
+        />
+        <button aria-label="Search weather">
+          <img
+            src="https://img.icons8.com/material-rounded/24/000000/search.png"
+            alt="Search Icon"
+          />
+        </button>
+    </div>
+
+    <!-- Added error and loading messages here -->
+    <p class="loading" style="display:none; margin: 5px 0; font-weight:bold; color: blue;">Loading...</p>
+    <p class="error" style="display:none; margin: 5px 0; font-weight:bold; color: red;"></p>
+
+    <div class="weather">
+        <img
+          src="https://cdn.search.brave.com/serp/v3/_app/immutable/assets/10d.B_q1na1S.svg"
+          alt="Weather-Icon"
+          width="100"
+          height="100"
+        />
+        <h1 class="temp">22°c</h1>
+        <h2 class="city">Bangalore</h2>
+        <div class="details">
+            <div class="col">
+                <img src="https://cdn-icons-png.flaticon.com/128/13945/13945026.png" />
+                <div>
+                    <p class="humidity">50%</p>
+                    <p>humidity</p>
+                </div>
+            </div>
+
+            <div class="col">
+                <img src="https://cdn-icons-png.flaticon.com/128/5024/5024369.png" />
+                <div>
+                    <p class="wind">15km/hr</p>
+                    <p>wind</p>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+<script>
+  const apiKey = "e7eac9205c79167644d901e44f274a38";
+
+  const searchBox  = document.querySelector(".search input");
+  const searchBtn  = document.querySelector(".search button");
+  const weather    = document.querySelector(".weather");
+  const weatherImg = weather.querySelector("img");
+  const loadingMsg = document.querySelector(".loading");
+  const errorMsg   = document.querySelector(".error");
+
+  // hide the panel until we get valid data
+  weather.style.display = "none";
+
+  function showLoading(show) {
+    loadingMsg.style.display = show ? "block" : "none";
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.style.display = msg ? "block" : "none";
+  }
+
+  async function checkWeather(city = "") {
+    city = city.trim();
+    if (!city) {
+      showError("Please enter a city name.");
+      weather.style.display = "none";
+      return;
+    }
+
+    showError("");
+    showLoading(true);
+    weather.style.display = "none";
+
+    const apiUrl =
+      `https://api.openweathermap.org/data/2.5/weather?units=metric&q=${city}&appid=${apiKey}`;
+
+    try {
+      const res  = await fetch(apiUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      /* ---- update text ---- */
+      weather.querySelector(".city").textContent     = data.name;
+      weather.querySelector(".temp").textContent     = `${Math.round(data.main.temp)}°C`;
+      weather.querySelector(".humidity").textContent = `${data.main.humidity}%`;
+      weather.querySelector(".wind").textContent     = `${data.wind.speed} km/h`;
+
+      /* ---- choose icon ---- */
+      const condition = data.weather[0].main.toLowerCase();
+      let iconUrl;
+      switch (condition) {
+        case "clouds":
+          iconUrl = "https://cdn-icons-png.flaticon.com/128/1163/1163661.png"; break;
+        case "clear":
+          iconUrl = "https://cdn-icons-png.flaticon.com/128/11742/11742559.png"; break;
+        case "rain":
+          iconUrl = "https://cdn-icons-png.flaticon.com/128/4088/4088981.png"; break;
+        case "drizzle":
+          iconUrl = "https://cdn-icons-png.flaticon.com/128/3075/3075858.png"; break;
+        case "mist":
+          iconUrl = "https://cdn-icons-png.flaticon.com/128/13883/13883289.png"; break;
+        default:
+          iconUrl = "https://cdn.search.brave.com/serp/v3/_app/immutable/assets/10d.B_q1na1S.svg";
+      }
+      weatherImg.src = `${iconUrl}?v=${Date.now()}`; // bust cache
+      weather.style.display = "block";               // reveal panel
+    } catch (err) {
+      showError("Could not fetch weather data. Please check the city name.");
+      weather.style.display = "none";
+      console.error("Weather fetch error:", err);
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  /* --- event wiring --- */
+  searchBtn.addEventListener("click", () => checkWeather(searchBox.value));
+  searchBox.addEventListener("keydown", e =>
+    e.key === "Enter" && checkWeather(searchBox.value)
+  );
+
+ 
+</script>
+
+
+</body>
+</html>
