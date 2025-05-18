@@ -122,8 +122,8 @@
         default:
           iconUrl = "https://cdn.search.brave.com/serp/v3/_app/immutable/assets/10d.B_q1na1S.svg";
       }
-      weatherImg.src = `${iconUrl}?v=${Date.now()}`; // bust cache
-      weather.style.display = "block";               // reveal panel
+      weatherImg.src = `${iconUrl}?v=${Date.now()}`; //    
+      weather.style.display = "block";               
     } catch (err) {
       showError("Could not fetch weather data. Please check the city name.");
       weather.style.display = "none";
